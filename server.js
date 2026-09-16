@@ -11,19 +11,11 @@ let users = [
 ]
 
 app.get('/', (req, res) => {
-  res.send('Hello Express')
+  res.status(200).send('Hello Express')
 })
 
 app.get('/api/users', (req, res) => {
-  res.json(users)
-})
-
-app.post('/api/users', (req, res) => {
-  const newUser = req.body
-  res.status(201).json({
-    message: 'User created',
-    user: newUser
-  })
+  res.status(200).json(users)
 })
 
 app.get('/api/users/:id', (req, res) => {
@@ -31,16 +23,26 @@ app.get('/api/users/:id', (req, res) => {
   const user = users.find(user => user.id === id)
 
   if (!user) {
-    return res.status(404).json({ message: 'User not found' })
+    return res.status(404).json(
+      { message: 'User not found' }
+    )
   }
 
-  res.json(user)
+  res.status(200).json(user)
 })
 
 app.post('/api/users', (req, res) => {
+  const name = req.body.name
+
+  if (!name) {
+    return res.status(400).json(
+      { message: 'Name is required' }
+    )
+  }
+
   const newUser = {
-    id: users.length + 1,
-    name: req.body.name
+    id: users.length ? Math.max(...users.map(user => user.id)) + 1 : 1,
+    name
   }
 
   users.push(newUser);
@@ -49,14 +51,22 @@ app.post('/api/users', (req, res) => {
 
 app.put('/api/users/:id', (req, res) => {
   const id = Number(req.params.id)
+  const name = req.body.name
   const user = users.find(user => user.id === id)
 
   if (!user) {
-    return res.status(404).json({ message: 'User not found' })
+    return res.status(404).json(
+      { message: 'User not found' }
+    )
+  }
+  if (!name) {
+    return res.status(400).json(
+      { message: 'Name is required' }
+    )
   }
 
-  user.name = req.body.name
-  res.json(user)
+  user.name = name
+  res.status(200).json(user)
 })
 
 app.delete('/api/users/:id', (req, res) => {
@@ -64,13 +74,15 @@ app.delete('/api/users/:id', (req, res) => {
   const index = users.findIndex(user => user.id === id)
 
   if (index === -1) {
-    return res.status(404).json({ message: 'User not found' })
+    return res.status(404).json(
+      { message: 'User not found' }
+    )
   }
 
   const deletedUser = users[index]
   users.splice(index, 1)
 
-  res.json({
+  res.status(200).json({
     message: 'User deleted',
     user: deletedUser
   })
